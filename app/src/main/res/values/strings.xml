@@ -1,0 +1,15 @@
+<resources>
+<string name="app_name">CCGanAndroid</string>
+<string name="detail_view">Detail View</string>
+<string name="name">Name:</string>
+<string name="occupation">Occupation:</string>
+<string name="close">Close</string>
+<string name="status">Status:</string>
+<string name="nickname">Nickname:</string>
+<string name="apperance">Season Appearance:</string>
+<string name="statusTxt">Status</string>
+<string name="nickname_Txt">Nickname</string>
+<string name="appearance_Txt">Season Appearance</string>
+<string name="nameTxt">name</string>
+<string name="occupationTxt">occupation</string>
+</resources>
