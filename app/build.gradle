@@ -5,7 +5,6 @@ plugins {
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
 
     defaultConfig {
         applicationId "com.example.ccganandroid"
@@ -30,6 +29,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'com.example.ccganandroid'
 }
 
 dependencies {
