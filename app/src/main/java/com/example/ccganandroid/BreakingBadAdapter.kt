@@ -1,7 +1,6 @@
 package com.example.ccganandroid
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
@@ -16,16 +15,16 @@ import org.json.JSONObject
 
 // ItemData class - Holds the data for each item in the list
 // This is generated from the response from the search call
-public class itemData {
+class ItemData {
     var text: String? = null
     var jsonObject: JSONObject? = null
 }
 
 // Adapter to handle each item in the list
-public class BreakingBadAdapter(private val myDataset: MutableList<itemData>, private val activity: MainActivity) :
+class BreakingBadAdapter(private val myDataset: MutableList<ItemData>, private val activity: MainActivity) :
         RecyclerView.Adapter<BreakingBadAdapter.MyViewHolder>(), View.OnClickListener {
 
-    val TAG: String = this.javaClass.name;
+    private val tag: String = this.javaClass.name
 
     // Handle onClick for list. Launches detail view
     override fun onClick(view: View?) {
@@ -34,7 +33,7 @@ public class BreakingBadAdapter(private val myDataset: MutableList<itemData>, pr
         val jsonObject: JSONObject =textView?.tag as JSONObject
 
         // Log selection
-        Log.i(TAG, "Clicked on " + textView.text)
+        Log.i(tag, "Clicked on " + textView.text)
 
         // Launch detail view
         val ni = Intent(activity, DetailViewActivity::class.java)
@@ -49,6 +48,7 @@ public class BreakingBadAdapter(private val myDataset: MutableList<itemData>, pr
 
     // Replace the contents of a view (invoked by the layout manager)
     @SuppressLint("UseCompatLoadingForDrawables")
+    @Suppress("Deprecation")
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
         // Get reference to TextView
@@ -60,25 +60,30 @@ public class BreakingBadAdapter(private val myDataset: MutableList<itemData>, pr
         textView.tag = myDataset[position].jsonObject
 
         // Get Image from Cache, if available
-        val drawableBitmap = MainActivity.imageCache.get((textView.tag as JSONObject?)?.getString("img"))
+        val drawableBitmap = MainActivity.imageCache[(textView.tag as JSONObject?)?.getString("img")]
 
         //textView.gravity = TextView.TEXT_ALIGNMENT_CENTER
         if (drawableBitmap != null) {
-            textView.setCompoundDrawablesWithIntrinsicBounds(drawableBitmap, null, null, null);
+            textView.setCompoundDrawablesWithIntrinsicBounds(drawableBitmap, null, null, null)
         } else {
             val empty = BitmapDrawable()
-            textView.setCompoundDrawablesWithIntrinsicBounds(empty, null, null, null);
+            textView.setCompoundDrawablesWithIntrinsicBounds(
+                empty,
+                null,
+                null,
+                null
+            )
         }
 
         // Set onClick listener
-        holder.linearLayout.setOnClickListener(this);
+        holder.linearLayout.setOnClickListener(this)
     }
 
     // Return the size (item count) of the dataset (invoked by the layout manager)
     override fun getItemCount() = myDataset.size
 
     // Create View Holder
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BreakingBadAdapter.MyViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
 
         // create a new view
         val layout = LayoutInflater.from(parent.context)

@@ -1,9 +1,8 @@
 package com.example.ccganandroid
 
 
-import android.content.IntentFilter
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -19,56 +18,50 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 import java.util.concurrent.Executors
 import javax.net.ssl.HttpsURLConnection
 import kotlin.collections.HashMap
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.scale
 
 
 class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
 
-    val TAG: String = this.javaClass.name;
+    private val tag: String = this.javaClass.name
 
-    var seasons = arrayOf("1", "2", "3", "4", "5")
-    var seasonFilter = "1"
+    private var seasons = arrayOf("1", "2", "3", "4", "5")
+    private var seasonFilter = "1"
     var lastSearch = String()
-    var searchView : SearchView? = null
-    var sview: SearchView? = null;
+    private var searchView : SearchView? = null
+    private var sView: SearchView? = null
 
-    private lateinit var recylerView: RecyclerView
-    public var viewAdapter: RecyclerView.Adapter<*>? = null
-        get() = field
+    private lateinit var recyclerView: RecyclerView
+    private var viewAdapter: RecyclerView.Adapter<*>? = null
     private lateinit var viewManager: RecyclerView.LayoutManager
-    private var datalist: MutableList<itemData> = emptyList<itemData>().toMutableList()
+    private var dataList: MutableList<ItemData> = emptyList<ItemData>().toMutableList()
 
     // onCreate
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.example.ccganandroid.R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
-        // Setup Search and Recyler views
+        // Setup Search and Recycler views
         setupInterface()
     }
 
-    // onDestroy
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     // setupInterface
-    fun setupInterface() {
+    private fun setupInterface() {
 
         // Get Reference to Recycler View
         viewManager = LinearLayoutManager(this)
-        viewAdapter = BreakingBadAdapter(datalist, this)
+        viewAdapter = BreakingBadAdapter(dataList, this)
 
-        recylerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
+        recyclerView = findViewById<RecyclerView>(R.id.recyclerView).apply {
             // All views are the same
             setHasFixedSize(true)
 
@@ -80,12 +73,12 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
         }
 
         // Get Reference to Search View
-        sview = findViewById(R.id.searchView) as SearchView
+        sView = findViewById(R.id.searchView)!!
         // Set search hint
-        sview!!.queryHint = """Search for Characters"""
+        sView!!.queryHint = """Search for Characters"""
 
         // Setup QueryTextListener
-        sview!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        sView!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 Log.d(this.javaClass.name, "onQueryTextSubmit was called")
                 return true
@@ -100,22 +93,23 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
         })
 
         // Setup season filter
-        val spin = findViewById(R.id.spinner) as Spinner
-        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, seasons)
+        val spin: Spinner = findViewById(R.id.spinner)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, seasons)
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spin.setAdapter(adapter);
-        spin.setOnItemSelectedListener(this);
+        spin.setAdapter(adapter)
+        spin.onItemSelectedListener = this
 
-        searchView = sview
+        searchView = sView
     }
 
 
 
     // doBBSearch
+    @SuppressLint("NotifyDataSetChanged")
     private fun  doBBSearch(searchTxt: String?)
     {
-        val doBBSearchRunnable: Runnable = Runnable {
+        val doBBSearchRunnable = Runnable {
 
             // Search string template
             // https://breakingbadapi.com/api/characters?name=
@@ -124,7 +118,7 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
                 searchTxt
             )
 
-            val url: URL = URL(searchUrlString)
+            val url = URL(searchUrlString)
             // Create connection
             val con: HttpsURLConnection?
             try {
@@ -135,33 +129,33 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
                 return@Runnable
             }
 
-            // Set some paramaters
+            // Set some parameters
             con!!.setUseCaches(false)
             con.setDoInput(true)
             con.setConnectTimeout(30 * 1000) // 30 seconds to connect
-            con.setReadTimeout(50 * 1000) // 5 seond timeout
+            con.setReadTimeout(50 * 1000) // 5 second timeout
             con.setRequestMethod("GET")
 
             try {
                 con.connect()
                 if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    Log.d(TAG, con.responseMessage)
+                    Log.d(tag, con.responseMessage)
                     return@Runnable
                 }
                 val baResponse = readFully(con.inputStream)
                 val size = baResponse?.size
                 if (size!! > 0) {
-                    val stemp: String = String(baResponse, Charsets.UTF_8)
-                    Log.d(TAG, stemp)
+                    val sTemp = String(baResponse, Charsets.UTF_8)
+                    Log.d(tag, sTemp)
 
-                    val resArray = JSONArray(stemp)
+                    val resArray = JSONArray(sTemp)
                     val count = resArray.length()
 
                     // Reset data
-                    datalist.clear();
+                    dataList.clear()
 
                     // add changed data
-                    for (index in 0..count-1)
+                    for (index in 0 until count)
                     {
                         val item: JSONObject = resArray.get(index) as JSONObject
 
@@ -171,34 +165,34 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
 
                         if (inSeason) {
                             // Log Item details
-                            Log.i(TAG, "Name = " + item.getString("name"))
-                            Log.i(TAG, "Char ID = " + item.getString("char_id"))
-                            Log.i(TAG, "Birthday = " + item.getString("birthday"))
-                            Log.i(TAG, "Occupation = " + item.getString("occupation"))
-                            Log.i(TAG, "Image Link = " + item.getString("img"))
-                            Log.i(TAG, "Status = " + item.getString("status"))
-                            Log.i(TAG, "Nick Name = " + item.getString("nickname"))
-                            Log.i(TAG, "Portrayed = " + item.getString("portrayed"))
-                            Log.i(TAG, "Category = " + item.getString("category"))
+                            Log.i(tag, "Name = " + item.getString("name"))
+                            Log.i(tag, "Char ID = " + item.getString("char_id"))
+                            Log.i(tag, "Birthday = " + item.getString("birthday"))
+                            Log.i(tag, "Occupation = " + item.getString("occupation"))
+                            Log.i(tag, "Image Link = " + item.getString("img"))
+                            Log.i(tag, "Status = " + item.getString("status"))
+                            Log.i(tag, "Nick Name = " + item.getString("nickname"))
+                            Log.i(tag, "Portrayed = " + item.getString("portrayed"))
+                            Log.i(tag, "Category = " + item.getString("category"))
 
-                            val idata: itemData = itemData()
-                            idata.text = item.getString("name")
-                            idata.jsonObject = item
+                            val iData = ItemData()
+                            iData.text = item.getString("name")
+                            iData.jsonObject = item
 
-                            datalist.add(idata)
+                            dataList.add(iData)
 
                             // Load Image
                             cacheImage(item.getString("img"))
                         }
                     }
                     // Notify there is an update
-                    runOnUiThread(Runnable { viewAdapter!!.notifyDataSetChanged() })
+                    runOnUiThread { viewAdapter!!.notifyDataSetChanged() }
 
                 }
             } catch (e: Exception) {
-                Log.d(TAG, "Error: " + e.localizedMessage)
+                Log.d(tag, "Error: " + e.localizedMessage)
                 if (e.javaClass.simpleName.equals("JSONException")){
-                    runOnUiThread(Runnable { viewAdapter!!.notifyDataSetChanged() })
+                    runOnUiThread { viewAdapter!!.notifyDataSetChanged() }
                     // Notify there is an update
                 }
                 return@Runnable
@@ -213,14 +207,14 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
         Executors.newSingleThreadExecutor().execute(doBBSearchRunnable)
     }
 
-    fun containsSeason(season: Int, jsonObject: JSONObject): Boolean {
-        var contains = false;
+    private fun containsSeason(season: Int, jsonObject: JSONObject): Boolean {
+        var contains = false
 
         val array : JSONArray= jsonObject.get("appearance") as JSONArray
         for (i in 0 until array.length()) {
             val seasonFromIndex = array.get(i)
             if (seasonFromIndex == season) {
-                contains = true;
+                contains = true
             }
         }
         return contains
@@ -232,17 +226,18 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
     }
 
     // cacheImage
+    @SuppressLint("NotifyDataSetChanged")
     private fun cacheImage(imageUrl: String?)
     {
         // No need to load, if we already have it
         if (imageCache.containsKey(imageUrl)){
-            return;
+            return
         }
 
         // Load it
-        val doLoadImagehRunnable: Runnable = Runnable {
+        val doLoadImageRunnable = Runnable {
 
-            val url: URL = URL(imageUrl)
+            val url = URL(imageUrl)
 
             // Create connection
             val con: HttpsURLConnection?
@@ -254,17 +249,17 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
                 return@Runnable
             }
 
-            // Set some paramaters
+            // Set some parameters
             con!!.setUseCaches(false)
             con.setDoInput(true)
             con.setConnectTimeout(30 * 1000) // 30 seconds to connect
-            con.setReadTimeout(50 * 1000) // 5 seond timeout
+            con.setReadTimeout(50 * 1000) // 5 second timeout
             con.setRequestMethod("GET")
 
             try {
                 con.connect()
                 if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    Log.d(TAG, con.responseMessage)
+                    Log.d(tag, con.responseMessage)
                     return@Runnable
                 }
                 val baResponse = readFully(con.inputStream)
@@ -272,12 +267,12 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
                 if (size!! > 0) {
                     // Create bitmap drawable for use in UI
                     val bmd = getDrawableFromData(baResponse)
-                    imageCache.put(imageUrl!!, bmd)
+                    imageCache[imageUrl!!] = bmd
 
-                    runOnUiThread(Runnable { viewAdapter!!.notifyDataSetChanged() })
+                    runOnUiThread { viewAdapter!!.notifyDataSetChanged() }
                 }
             } catch (e: Exception) {
-                Log.d(TAG, "Error: " + e.localizedMessage)
+                Log.d(tag, "Error: " + e.localizedMessage)
                 return@Runnable
             } finally {
                 con.disconnect()
@@ -285,18 +280,13 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
         }
 
         // Run thread
-        Executors.newSingleThreadExecutor().execute(doLoadImagehRunnable)
+        Executors.newSingleThreadExecutor().execute(doLoadImageRunnable)
     }
 
-    fun getDrawableFromData(buffer: ByteArray ): BitmapDrawable {
-
-
-
+    private fun getDrawableFromData(buffer: ByteArray ): BitmapDrawable {
         val b: Bitmap = BitmapFactory.decodeByteArray(buffer, 0, buffer.size)
-        val bs: Bitmap = createScaledBitmap(b, 200, 250, false);
-
-        val bd = BitmapDrawable(resources, bs)
-
+        val bs: Bitmap = b.scale(200, 250, false)
+        val bd = bs.toDrawable(resources)
         return bd
     }
 
@@ -315,9 +305,10 @@ class MainActivity : AppCompatActivity(),  AdapterView.OnItemSelectedListener{
             }
             baf.toByteArray()
         } catch (e: java.lang.Exception) {
-            Log.d(TAG, "read error", e)
+            Log.d(tag, "read error", e)
             null
         } catch (e: OutOfMemoryError) {
+            Log.d(tag, "memory error", e)
             null
         } finally {
             `is`.close()

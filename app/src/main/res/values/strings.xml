@@ -12,4 +12,5 @@
 <string name="appearance_Txt">Season Appearance</string>
 <string name="nameTxt">name</string>
 <string name="occupationTxt">occupation</string>
+    <string name="image_view">Image View</string>
 </resources>

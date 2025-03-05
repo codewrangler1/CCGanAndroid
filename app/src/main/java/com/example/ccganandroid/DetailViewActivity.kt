@@ -1,21 +1,17 @@
 package com.example.ccganandroid
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.edit
 import org.json.JSONObject
 
 class DetailViewActivity : AppCompatActivity() {
 
-    val TAG: String = this.javaClass.name;
+    private val tag: String = this.javaClass.name
     private lateinit var name: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,15 +30,15 @@ class DetailViewActivity : AppCompatActivity() {
             val jsonString = intent.getStringExtra("itemData")
 
             if (jsonString != null) {
-                Log.d(TAG, jsonString)
+                Log.d(tag, jsonString)
 
                 // Create JSONObject from String
-                val jsonObject: JSONObject = JSONObject(jsonString)
+                val jsonObject = JSONObject(jsonString)
 
                 window.findViewById<TextView>(R.id.tvName).text = jsonObject.getString("name")
                 name = jsonObject.getString("name")
 
-                val bmd = MainActivity.imageCache.get(jsonObject.get("img"))
+                val bmd = MainActivity.imageCache[jsonObject.get("img")]
                 if (bmd != null) {
                     window.findViewById<ImageView>(R.id.imageView).setImageDrawable(bmd)
                 }
@@ -76,8 +72,8 @@ class DetailViewActivity : AppCompatActivity() {
         }
     }
 
-    // OnClickClose
-    fun OnClickClose(view: View) {
+    // onClickClose
+    fun onClickClose() {
         finish() // close activity
     }
 
